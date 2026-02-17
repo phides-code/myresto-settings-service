@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  CfToken:
+    Type: String
+    NoEcho: true
+    Description: Token for API auth (e.g. Cloudflare or custom); set via --parameter-overrides CfToken=xxx when deploying
+
+Resources:
+  MyrestoSettingsService:
+    Type: AWS::Serverless::Api
+    Description: "Serverless API for CRUD operations"
+    Properties:
+      Name: "myresto-settings-service"
+      StageName: Prod
+      Auth:
+      Cors:
+        AllowMethods: "'OPTIONS, POST, GET, PUT, DELETE'"
+        AllowHeaders: "'Content-Type, X-CF-Token'"
+        # AllowOrigin: "'http://localhost:5173'" 
+        AllowOrigin: "'https://d3knrnqllqxltd.cloudfront.net'" 
+
+      # Logging settings
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+          DataTraceEnabled: true
+
+  MyrestoSettingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 10
+      Handler: bootstrap
+      Runtime: provided.al2023
+      MemorySize: 512
+      Environment:
+        Variables:
+          AWS_CF_TOKEN: !Ref CfToken  # comes from --parameter-overrides
+      Policies:
+        - AWSLambdaExecute
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MyrestoSettingsTable
+      Events:
+        SettingsOptions:
+          Type: Api
+          Properties:
+            Path: /settings
+            Method: OPTIONS
+            RestApiId: !Ref MyrestoSettingsService
+        SettingsOptionsId:
+          Type: Api
+          Properties:
+            Path: /settings/{id}
+            Method: OPTIONS
+            RestApiId: !Ref MyrestoSettingsService
+        GetSetting:
+          Type: Api
+          Properties:
+            Path: /settings/{id}
+            Method: GET
+            RestApiId: !Ref MyrestoSettingsService
+            
+        GetSettings:
+          Type: Api
+          Properties:
+            Path: /settings
+            Method: GET
+            RestApiId: !Ref MyrestoSettingsService
+            
+        PutSetting:
+          Type: Api
+          Properties:
+            Path: /settings
+            Method: POST
+            RestApiId: !Ref MyrestoSettingsService
+            
+        DeleteSetting:
+          Type: Api
+          Properties:
+            Path: /settings/{id}
+            Method: DELETE
+            RestApiId: !Ref MyrestoSettingsService
+            
+        UpdateSetting:
+          Type: Api
+          Properties:
+            Path: /settings/{id}
+            Method: PUT
+            RestApiId: !Ref MyrestoSettingsService
+            
+    Metadata:
+      BuildMethod: makefile
+
+  MyrestoSettingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: MyrestoSettings
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
