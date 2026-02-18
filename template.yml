@@ -2,10 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
-  CfToken:
+  AwsCfToken:
     Type: String
     NoEcho: true
-    Description: Token for API auth (e.g. Cloudflare or custom); set via --parameter-overrides CfToken=xxx when deploying
+    Description: Token for API auth (e.g. Cloudflare or custom); set via --parameter-overrides AwsCfToken=xxx when deploying
+  AdminKey:
+    Type: String
+    NoEcho: true
+    Description: Key for frontend admin access set via --parameter-overrides AdminKey=xxx when deploying
 
 Resources:
   MyrestoSettingsService:
@@ -17,7 +21,7 @@ Resources:
       Auth:
       Cors:
         AllowMethods: "'OPTIONS, POST, GET, PUT, DELETE'"
-        AllowHeaders: "'Content-Type, X-CF-Token'"
+        AllowHeaders: "'Content-Type, X-CF-Token, X-Admin-Key'"
         # AllowOrigin: "'http://localhost:5173'" 
         AllowOrigin: "'https://d3knrnqllqxltd.cloudfront.net'" 
 
@@ -38,7 +42,9 @@ Resources:
       MemorySize: 512
       Environment:
         Variables:
-          AWS_CF_TOKEN: !Ref CfToken  # comes from --parameter-overrides
+          # comes from --parameter-overrides
+          AWS_CF_TOKEN: !Ref AwsCfToken  
+          ADMIN_KEY: !Ref AdminKey
       Policies:
         - AWSLambdaExecute
         - DynamoDBCrudPolicy:
@@ -50,6 +56,7 @@ Resources:
             Path: /settings
             Method: OPTIONS
             RestApiId: !Ref MyrestoSettingsService
+
         SettingsOptionsId:
           Type: Api
           Properties:
@@ -62,7 +69,20 @@ Resources:
             Path: /settings/{id}
             Method: GET
             RestApiId: !Ref MyrestoSettingsService
-            
+
+        ValidateAdminKeyOptions:
+          Type: Api
+          Properties:
+            Path: /settings/validateadminkey
+            Method: OPTIONS
+            RestApiId: !Ref MyrestoSettingsService
+        ValidateAdminKey:
+          Type: Api
+          Properties:
+            Path: /settings/validateadminkey
+            Method: GET
+            RestApiId: !Ref MyrestoSettingsService
+
         GetSettings:
           Type: Api
           Properties:

@@ -37,3 +37,4 @@ jobs:
                   make deploy
               env:
                   AWS_CF_TOKEN: ${{ secrets.AWS_CF_TOKEN }}
+                  ADMIN_KEY: ${{ secrets.ADMIN_KEY }}

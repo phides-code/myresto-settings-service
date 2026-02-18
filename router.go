@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/go-playground/validator"
@@ -22,22 +23,24 @@ var validate *validator.Validate = validator.New()
 
 var headers = map[string]string{
 	"Access-Control-Allow-Origin":  OriginURL,
-	"Access-Control-Allow-Headers": "Content-Type, X-CF-Token",
+	"Access-Control-Allow-Headers": "Content-Type, X-CF-Token, X-Admin-Key",
 }
 
 func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	log.Println("router() received " + req.HTTPMethod + " request")
 
-	awsCfToken := os.Getenv("AWS_CF_TOKEN")
+	if !localMode {
+		awsCfToken := os.Getenv("AWS_CF_TOKEN")
 
-	if awsCfToken == "" {
-		return serverError(errors.New("Error reading environment variable"))
-	}
+		if awsCfToken == "" {
+			return serverError(errors.New("Error reading environment variable"))
+		}
 
-	providedCfToken := req.Headers["X-CF-Token"]
+		providedCfToken := req.Headers["X-CF-Token"]
 
-	if providedCfToken != awsCfToken {
-		return clientError(http.StatusUnauthorized)
+		if providedCfToken != awsCfToken {
+			return clientError(http.StatusUnauthorized)
+		}
 	}
 
 	switch req.HTTPMethod {
@@ -71,12 +74,44 @@ func processOptions() (events.APIGatewayProxyResponse, error) {
 }
 
 func processGet(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if strings.HasPrefix(req.Resource, "/settings/validateadminkey") {
+		return processValidateAdminKey(req)
+	}
+
 	id, idPresent := req.PathParameters["id"]
 	if idPresent {
 		return processGetEntityById(ctx, id)
-	} else {
-		return processGetAll(ctx)
 	}
+	return processGetAll(ctx)
+}
+
+func processValidateAdminKey(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	adminKey := os.Getenv("ADMIN_KEY")
+
+	if adminKey == "" {
+		return serverError(errors.New("processValidateAdminKey(): Error reading environment variable"))
+	}
+
+	providedAdminKey := req.Headers["X-Admin-Key"]
+
+	validity := providedAdminKey == adminKey
+
+	response := ResponseStructure{
+		Data:         validity,
+		ErrorMessage: nil,
+	}
+
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		log.Println("processValidateAdminKey() error running json.Marshal")
+		return serverError(err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       string(responseJson),
+		Headers:    headers,
+	}, nil
 }
 
 func processGetEntityById(ctx context.Context, id string) (events.APIGatewayProxyResponse, error) {
