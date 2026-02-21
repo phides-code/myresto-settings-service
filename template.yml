@@ -21,7 +21,7 @@ Resources:
       Auth:
       Cors:
         AllowMethods: "'OPTIONS, POST, GET, PUT, DELETE'"
-        AllowHeaders: "'Content-Type, X-CF-Token, X-Admin-Key'"
+        AllowHeaders: "'Content-Type, X-CF-Token, x-admin-key'"
         # AllowOrigin: "'http://localhost:5173'" 
         AllowOrigin: "'https://d3knrnqllqxltd.cloudfront.net'" 
 

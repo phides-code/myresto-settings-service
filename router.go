@@ -23,7 +23,7 @@ var validate *validator.Validate = validator.New()
 
 var headers = map[string]string{
 	"Access-Control-Allow-Origin":  OriginURL,
-	"Access-Control-Allow-Headers": "Content-Type, X-CF-Token, X-Admin-Key",
+	"Access-Control-Allow-Headers": "Content-Type, X-CF-Token, x-admin-key",
 }
 
 func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -95,7 +95,13 @@ func processValidateAdminKey(req events.APIGatewayProxyRequest) (events.APIGatew
 		return serverError(errors.New("processValidateAdminKey(): Error reading environment variable"))
 	}
 
-	providedAdminKey := req.Headers["X-Admin-Key"]
+	var providedAdminKey string
+
+	if localMode {
+		providedAdminKey = req.Headers["X-Admin-Key"]
+	} else {
+		providedAdminKey = req.Headers["x-admin-key"]
+	}
 
 	validity := providedAdminKey == adminKey
 
