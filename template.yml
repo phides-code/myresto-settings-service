@@ -24,7 +24,7 @@ Resources:
         RestrictPublicBuckets: true
 
   # Lambda Execution Role
-   MyrestoSettingsLambdaExecutionRole:
+  MyrestoSettingsLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
