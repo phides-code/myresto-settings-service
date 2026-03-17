@@ -9,3 +9,7 @@ const ApiPath = "settings"
 // const localMode = true
 
 const localMode = false
+
+const bucketName = "myrestosettings-64fc154d"
+
+const settingsFilename = "settings.json"
