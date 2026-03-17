@@ -45,11 +45,11 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:PutObject
-                Resource: !Sub '${MyrestoSettingsBucket}/*'
+                Resource: !Sub '${MyrestoSettingsBucket.Arn}/*'
               - Effect: Allow
                 Action:
                   - s3:ListBucket
-                Resource: !Ref MyrestoSettingsBucket
+                Resource: !GetAtt MyrestoSettingsBucket.Arn
 
   MyrestoSettingsService:
     Type: AWS::Serverless::Api
