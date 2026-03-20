@@ -77,7 +77,7 @@ func processGet(ctx context.Context, req events.APIGatewayProxyRequest) (events.
 		return processValidateAdminKey(req)
 	}
 
-	return handleAdminOnly(ctx, req, processGetSettings)
+	return processGetSettings(ctx, req)
 }
 
 func processGetSettings(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
