@@ -1,30 +1,21 @@
 package main
 
 type Settings struct {
-	BannerMessage string          `json:"bannerMessage" validate:"required"`
-	Hours         SettingsHours   `json:"hours" validate:"required"`
-	Contact       SettingsContact `json:"contact" validate:"required"`
-	Social        SettingsSocial  `json:"social" validate:"required"`
-}
+	BannerMessage string `json:"bannerMessage" validate:"required"`
 
-type SettingsHours struct {
-	Mon string `json:"mon"`
-	Tue string `json:"tue"`
-	Wed string `json:"wed"`
-	Thu string `json:"thu"`
-	Fri string `json:"fri"`
-	Sat string `json:"sat"`
-	Sun string `json:"sun"`
-}
+	HoursMonday    string `json:"hoursMonday" validate:"required"`
+	HoursTuesday   string `json:"hoursTuesday" validate:"required"`
+	HoursWednesday string `json:"hoursWednesday" validate:"required"`
+	HoursThursday  string `json:"hoursThursday" validate:"required"`
+	HoursFriday    string `json:"hoursFriday" validate:"required"`
+	HoursSaturday  string `json:"hoursSaturday" validate:"required"`
+	HoursSunday    string `json:"hoursSunday" validate:"required"`
 
-type SettingsContact struct {
-	Phone   string `json:"phone"`
-	Email   string `json:"email"`
-	Address string `json:"address"`
-}
+	Phone   string `json:"phone" validate:"required"`
+	Email   string `json:"email" validate:"required"`
+	Address string `json:"address" validate:"required"`
 
-type SettingsSocial struct {
-	Instagram string `json:"instagram"`
-	Facebook  string `json:"facebook"`
-	Tiktok    string `json:"tiktok"`
+	Instagram string `json:"instagram" validate:"required"`
+	Facebook  string `json:"facebook" validate:"required"`
+	Tiktok    string `json:"tiktok" validate:"required"`
 }
