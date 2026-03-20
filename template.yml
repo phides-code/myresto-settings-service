@@ -49,7 +49,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:ListBucket
-                Resource: { "Fn::GetAtt": ["MyrestoSettingsBucket", "Arn"] }
+                Resource: !GetAtt MyrestoSettingsBucket.Arn
 
   MyrestoSettingsService:
     Type: AWS::Serverless::Api
@@ -79,7 +79,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2023
       MemorySize: 512
-      Role: { "Fn::GetAtt": ["MyrestoSettingsBucket", "Arn"] }
+      Role: !GetAtt MyrestoSettingsLambdaExecutionRole.Arn
       Environment:
         Variables:
           # comes from --parameter-overrides
