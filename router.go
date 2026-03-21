@@ -77,10 +77,10 @@ func processGet(ctx context.Context, req events.APIGatewayProxyRequest) (events.
 		return processValidateAdminKey(req)
 	}
 
-	return processGetSettings(ctx, req)
+	return processGetSettings(ctx)
 }
 
-func processGetSettings(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func processGetSettings(ctx context.Context) (events.APIGatewayProxyResponse, error) {
 	settingsBytes, err := myS3.DownloadFile(ctx, settingsFilename)
 	if err != nil {
 		return serverError(err)

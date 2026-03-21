@@ -126,17 +126,3 @@ Resources:
             
     Metadata:
       BuildMethod: makefile
-
-  MyrestoSettingsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: MyrestoSettings
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2

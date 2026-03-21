@@ -6,3 +6,4 @@ post-data.json
 put-data.json
 curl.md
 env.json
+clean-s3.sh
