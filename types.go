@@ -29,6 +29,7 @@ type Theme struct {
 	LinkColor       string `json:"linkColor" validate:"required"`
 	AccentColor     string `json:"accentColor" validate:"required"`
 	ButtonColor     string `json:"buttonColor" validate:"required"`
+	ButtonTextColor string `json:"buttonTextColor" validate:"required"`
 }
 
 type ThemeSettings struct {
