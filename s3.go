@@ -24,10 +24,10 @@ type BucketBasics struct {
 }
 
 // UploadFile reads from a file and puts the data into an object in a bucket.
-func (basics BucketBasics) UploadFile(body io.Reader) (string, error) {
+func (basics BucketBasics) UploadFile(body io.Reader, filename string) (string, error) {
 	_, err := basics.S3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
-		Key:         aws.String(settingsFilename),
+		Key:         aws.String(filename),
 		Body:        body,
 		ContentType: aws.String("json"),
 	})
@@ -36,24 +36,24 @@ func (basics BucketBasics) UploadFile(body io.Reader) (string, error) {
 		return "", err
 	}
 
-	return settingsFilename, nil
+	return filename, nil
 }
 
 // DownloadFile gets an object from a bucket and returns its contents.
-func (basics BucketBasics) DownloadFile(ctx context.Context, objectKey string) ([]byte, error) {
+func (basics BucketBasics) DownloadFile(ctx context.Context, filename string) ([]byte, error) {
 	result, err := basics.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
+		Key:    aws.String(filename),
 	})
 	if err != nil {
-		log.Printf("Couldn't get object %v:%v. Here's why: %v\n", bucketName, objectKey, err)
+		log.Printf("Couldn't get object %v:%v. Here's why: %v\n", bucketName, filename, err)
 		return nil, err
 	}
 	defer result.Body.Close()
 
 	body, err := io.ReadAll(result.Body)
 	if err != nil {
-		log.Printf("Couldn't read object body from %v. Here's why: %v\n", objectKey, err)
+		log.Printf("Couldn't read object body from %v. Here's why: %v\n", filename, err)
 		return nil, err
 	}
 

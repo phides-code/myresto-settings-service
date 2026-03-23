@@ -96,6 +96,18 @@ Resources:
             Path: /settings
             Method: OPTIONS
             RestApiId: !Ref MyrestoSettingsService
+        GetSettings:
+          Type: Api
+          Properties:
+            Path: /settings
+            Method: GET
+            RestApiId: !Ref MyrestoSettingsService
+        PostSetting:
+          Type: Api
+          Properties:
+            Path: /settings
+            Method: POST
+            RestApiId: !Ref MyrestoSettingsService
 
         ValidateAdminKeyOptions:
           Type: Api
@@ -110,19 +122,37 @@ Resources:
             Method: GET
             RestApiId: !Ref MyrestoSettingsService
 
-        GetSettings:
+        ThemesOptions:
           Type: Api
           Properties:
-            Path: /settings
+            Path: /settings/themes
+            Method: OPTIONS
+            RestApiId: !Ref MyrestoSettingsService
+        GetThemes:
+          Type: Api
+          Properties:
+            Path: /settings/themes
             Method: GET
             RestApiId: !Ref MyrestoSettingsService
-            
-        PutSetting:
+
+        ThemeSettingsOptions:
           Type: Api
           Properties:
-            Path: /settings
-            Method: POST
+            Path: /settings/themesettings
+            Method: OPTIONS
             RestApiId: !Ref MyrestoSettingsService
-            
+        GetThemeSettings:
+          Type: Api
+          Properties:
+            Path: /settings/themesettings
+            Method: GET
+            RestApiId: !Ref MyrestoSettingsService
+        PostThemeSettings:
+          Type: Api
+          Properties:
+            Path: /settings/themesettings
+            Method: POST
+            RestApiId: !Ref MyrestoSettingsService                              
+
     Metadata:
       BuildMethod: makefile

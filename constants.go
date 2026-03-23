@@ -13,3 +13,5 @@ const localMode = false
 const bucketName = "myresto-settings-bucket-1f741eb9"
 
 const settingsFilename = "settings.json"
+const themesFilename = "themes.json"
+const themeSettingsFilename = "themeSettings.json"

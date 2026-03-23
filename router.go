@@ -50,7 +50,7 @@ func router(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIG
 	case "GET":
 		return processGet(ctx, req)
 	case "POST":
-		return handleAdminOnly(ctx, req, processPostSettings)
+		return processPost(ctx, req)
 	case "OPTIONS":
 		return processOptions()
 	default:
@@ -77,7 +77,104 @@ func processGet(ctx context.Context, req events.APIGatewayProxyRequest) (events.
 		return processValidateAdminKey(req)
 	}
 
+	if strings.HasPrefix(req.Resource, "/settings/themesettings") {
+		return processGetThemeSettings(ctx)
+	}
+
+	if strings.HasPrefix(req.Resource, "/settings/themes") {
+		return processGetThemes(ctx)
+	}
+
 	return processGetSettings(ctx)
+}
+
+func processPost(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if strings.HasPrefix(req.Resource, "/settings/themesettings") {
+		return handleAdminOnly(ctx, req, processPostThemeSettings)
+	}
+
+	return handleAdminOnly(ctx, req, processPostSettings)
+}
+
+func processGetThemeSettings(ctx context.Context) (events.APIGatewayProxyResponse, error) {
+	themeSettingsBytes, err := myS3.DownloadFile(ctx, themeSettingsFilename)
+	if err != nil {
+		return serverError(err)
+	}
+
+	var themeSettings ThemeSettings
+	err = json.Unmarshal(themeSettingsBytes, &themeSettings)
+	if err != nil {
+		log.Printf("processGetThemeSettings() Can't unmarshal themeSettings: %v", err)
+		return serverError(err)
+	}
+
+	err = validate.Struct(&themeSettings)
+	if err != nil {
+		log.Printf("Invalid body: %v", err)
+		return serverError(err)
+	}
+
+	response := ResponseStructure{
+		Data:         themeSettings,
+		ErrorMessage: nil,
+	}
+
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		log.Println("processGetThemeSettings() error running json.Marshal")
+		return serverError(err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       string(responseJson),
+		Headers:    headers,
+	}, nil
+}
+
+func processGetThemes(ctx context.Context) (events.APIGatewayProxyResponse, error) {
+	themesBytes, err := myS3.DownloadFile(ctx, themesFilename)
+	if err != nil {
+		return serverError(err)
+	}
+
+	var themes []Theme
+	err = json.Unmarshal(themesBytes, &themes)
+	if err != nil {
+		log.Printf("processGetThemes() Can't unmarshal themes: %v", err)
+		return serverError(err)
+	}
+
+	for i := range themes {
+		if err := validate.Struct(&themes[i]); err != nil {
+			log.Printf("processGetThemes() Invalid body: %v", err)
+			return serverError(err)
+		}
+	}
+
+	// err = validate.Struct(&themes)
+	// if err != nil {
+	// 	log.Printf("processGetThemes() Invalid body: %v", err)
+	// 	return serverError(err)
+	// }
+
+	response := ResponseStructure{
+		Data:         themes,
+		ErrorMessage: nil,
+	}
+
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		log.Println("processGetThemes() error running json.Marshal")
+		return serverError(err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       string(responseJson),
+		Headers:    headers,
+	}, nil
 }
 
 func processGetSettings(ctx context.Context) (events.APIGatewayProxyResponse, error) {
@@ -117,6 +214,49 @@ func processGetSettings(ctx context.Context) (events.APIGatewayProxyResponse, er
 	}, nil
 }
 
+func processPostThemeSettings(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var newThemeSettings ThemeSettings
+	err := json.Unmarshal([]byte(req.Body), &newThemeSettings)
+	if err != nil {
+		log.Printf("processPostThemeSettings() Can't unmarshal body: %v", err)
+		return clientError(http.StatusUnprocessableEntity)
+	}
+
+	err = validate.Struct(&newThemeSettings)
+	if err != nil {
+		log.Printf("processPostThemeSettings() Invalid body: %v", err)
+		return clientError(http.StatusBadRequest)
+	}
+
+	newThemeSettingsBytes, err := json.Marshal(newThemeSettings)
+	if err != nil {
+		log.Printf("processPostThemeSettings() Can't marshal themeSettings: %v", err)
+		return serverError(err)
+	}
+
+	fileName, err := myS3.UploadFile(bytes.NewReader(newThemeSettingsBytes), themeSettingsFilename)
+	if err != nil {
+		return serverError(err)
+	}
+
+	response := ResponseStructure{
+		Data:         &fileName,
+		ErrorMessage: nil,
+	}
+
+	responseJson, err := json.Marshal(response)
+	if err != nil {
+		log.Println("processPostThemeSettings() error running json.Marshal")
+		return serverError(err)
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusCreated,
+		Body:       string(responseJson),
+		Headers:    headers,
+	}, nil
+}
+
 func processPostSettings(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var newSettings Settings
 	err := json.Unmarshal([]byte(req.Body), &newSettings)
@@ -137,7 +277,7 @@ func processPostSettings(ctx context.Context, req events.APIGatewayProxyRequest)
 		return serverError(err)
 	}
 
-	fileName, err := myS3.UploadFile(bytes.NewReader(newSettingsBytes))
+	fileName, err := myS3.UploadFile(bytes.NewReader(newSettingsBytes), settingsFilename)
 	if err != nil {
 		return serverError(err)
 	}
