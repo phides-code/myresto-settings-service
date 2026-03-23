@@ -153,12 +153,6 @@ func processGetThemes(ctx context.Context) (events.APIGatewayProxyResponse, erro
 		}
 	}
 
-	// err = validate.Struct(&themes)
-	// if err != nil {
-	// 	log.Printf("processGetThemes() Invalid body: %v", err)
-	// 	return serverError(err)
-	// }
-
 	response := ResponseStructure{
 		Data:         themes,
 		ErrorMessage: nil,
