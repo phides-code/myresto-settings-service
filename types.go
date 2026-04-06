@@ -2,6 +2,7 @@ package main
 
 type Settings struct {
 	BannerMessage  string `json:"bannerMessage" validate:"required"`
+	MainBlurb      string `json:"mainBlurb" validate:"required"`
 	HoursMonday    string `json:"hoursMonday" validate:"required"`
 	HoursTuesday   string `json:"hoursTuesday" validate:"required"`
 	HoursWednesday string `json:"hoursWednesday" validate:"required"`
